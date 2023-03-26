@@ -1,11 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config()
+
 import express from 'express';
 import cors  from 'cors';
 import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
-
 import { auth, login, refreshToken } from './middleware/auth';
-
-dotenv.config()
+import { sequelize } from './database';
 
 const app = express();
 const port = process.env.PORT || '3000';
@@ -30,6 +30,12 @@ app.get('/secure-route', auth, (req, res) => {
     })
 });
 
-app.listen(port, () => {
-  return console.log(`Express is listening at http://localhost:${port}`);
-});
+// check database connection
+sequelize.authenticate().then(() => {
+    console.log('Connection has been established successfully.');
+    app.listen(port, () => {
+        return console.log(`Express is listening at http://localhost:${port}`);
+    });
+}).catch((error: any) => {
+    console.error('Unable to connect to the database:', error);
+})
