@@ -4,7 +4,8 @@ dotenv.config()
 import express from 'express';
 import cors  from 'cors';
 import bodyParser from 'body-parser';
-import { auth, login, refreshToken, logout } from './middleware/auth';
+import { login, refreshToken, logout } from './businesslogic/auth';
+import { auth } from './middleware/auth';
 import { sequelize } from './database';
 
 const app = express();

@@ -2,7 +2,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { LoginToken } from './loginToken';
 import { RefreshToken } from './refreshToken';
 import { User, UserRole } from './user';
-import { type TokenContent, type TokenUser, TokenType } from '../middleware/types';
+import { type TokenContent, type TokenUser, TokenType } from '../businesslogic/types';
 
 export {
   type TokenContent,
