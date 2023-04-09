@@ -6,34 +6,52 @@ import { Session, TokenType } from "../database/session";
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = process.env.JWTKEY || '<ASECRETKEYTOENCRYPTJWT>'
 
+export enum UserRole {
+    User,
+    Admin
+}
 
-async function createAuthTokens(userId: number, username: string) : Promise<{ loginToken: string, refreshToken: string } | null> {
-    const dbUser = await User.findOne({
-        where: {
-            id: userId,
-            username
+export interface TokenUser {
+    id: number,
+    username: string,
+    role: UserRole,
+}
+
+export interface LoginDto {
+    loginToken: string,
+    refreshToken: string,
+}
+
+async function createAuthTokens(userId: number) : Promise<LoginDto | null> {
+    try {
+        const dbUser = await User.findOne({
+            where: {
+                id: userId,
+            }
+        })
+        if(!dbUser) { 
+            throw new Error('user not found')
         }
-    })
-    if(!dbUser) { 
+        const tokenUser = Object.assign({}, {
+            user: {
+                id: dbUser.id,
+                username: dbUser.username,
+                role: dbUser.role,
+            }
+        })
+        const loginToken = jwt.sign({ tokenUser, type: TokenType.RefreshToken.toString() }, SECRET_KEY, {
+            expiresIn: '2 days',
+        });
+        const refreshToken = jwt.sign({ tokenUser, type: TokenType.LoginToken.toString() }, SECRET_KEY, {
+            expiresIn: '7 days',
+        });
+        return Promise.resolve({
+            loginToken,
+            refreshToken
+        })
+    } catch (err: any) {
         return Promise.resolve(null)
     }
-    const tokenUser = Object.assign({}, {
-        user: {
-            id: dbUser.id,
-            username: dbUser.username,
-            role: dbUser.role,
-        }
-    })
-    const loginToken = jwt.sign({ tokenUser, type: TokenType.RefreshToken.toString() }, SECRET_KEY, {
-        expiresIn: '2 days',
-    });
-    const refreshToken = jwt.sign({ tokenUser, type: TokenType.LoginToken.toString() }, SECRET_KEY, {
-        expiresIn: '7 days',
-    });
-    return Promise.resolve({
-        loginToken,
-        refreshToken
-    })
 }
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
