@@ -6,6 +6,7 @@ import { Session, TokenType } from "../database/session";
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = process.env.JWTKEY || '<ASECRETKEYTOENCRYPTJWT>'
 
+
 async function createAuthTokens(userId: number, username: string) : Promise<{ loginToken: string, refreshToken: string } | null> {
     const dbUser = await User.findOne({
         where: {
@@ -23,10 +24,10 @@ async function createAuthTokens(userId: number, username: string) : Promise<{ lo
             role: dbUser.role,
         }
     })
-    const loginToken = jwt.sign({ tokenUser, type: 'loginToken' }, SECRET_KEY, {
+    const loginToken = jwt.sign({ tokenUser, type: TokenType.RefreshToken.toString() }, SECRET_KEY, {
         expiresIn: '2 days',
     });
-    const refreshToken = jwt.sign({ tokenUser, type: 'refreshToken' }, SECRET_KEY, {
+    const refreshToken = jwt.sign({ tokenUser, type: TokenType.LoginToken.toString() }, SECRET_KEY, {
         expiresIn: '7 days',
     });
     return Promise.resolve({
@@ -42,7 +43,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
             throw new Error();
         }
         const decoded = jwt.verify(token, SECRET_KEY);
-        if(decoded.type !== 'loginToken') {
+        if(decoded.type !== TokenType.LoginToken.toString()) {
             throw new Error();
         }
         req.header['user'] = decoded.user;
@@ -69,7 +70,7 @@ export async function refreshToken(req: Request, res: Response) {
             throw new Error();
         }
         const decoded = jwt.verify(token, SECRET_KEY);
-        if(decoded.type !== 'refreshToken') {
+        if(decoded.type !== TokenType.RefreshToken.toString()) {
             throw new Error();
         }
         const userSessionToken = await Session.findOne({
