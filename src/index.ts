@@ -4,7 +4,7 @@ dotenv.config()
 import express from 'express';
 import cors  from 'cors';
 import bodyParser from 'body-parser';
-import { auth, login, refreshToken } from './middleware/auth';
+import { auth, login, refreshToken, logout } from './middleware/auth';
 import { sequelize } from './database';
 
 const app = express();
@@ -23,6 +23,7 @@ app.use(cors({
 // login and refresh endpoints
 app.post('/login', login)
 app.post('/refreshToken', refreshToken)
+app.post('/logout', auth, logout)
 
 app.get('/secure-route', auth, (req, res) => {
     res.status(200).send({

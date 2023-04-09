@@ -1,5 +1,11 @@
 import { Table, Column, Model, PrimaryKey, HasMany, AllowNull, Unique } from 'sequelize-typescript';
-import { Session } from './session';
+import { LoginToken } from './loginToken';
+
+
+export enum UserRole {
+  User = 'User',
+  Admin = 'Admin'
+}
 
 @Table
 export class User extends Model {
@@ -18,6 +24,6 @@ export class User extends Model {
   @Column
   role: string;
 
-  @HasMany(() => Session)
-  sessionTokens: Session[];
+  @HasMany(() => LoginToken)
+  loginTokens: LoginToken[];
 }
