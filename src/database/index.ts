@@ -1,17 +1,13 @@
-import { DataTypes, Sequelize } from "@sequelize/core";
+import { Sequelize } from 'sequelize-typescript';
+import { Session } from './session';
+import { User } from './user';
+
+export {
+  User
+}
 
 export const sequelize = new Sequelize(process.env.MYSQL_DATABASE, process.env.MYSQL_USER, process.env.MYSQL_PASSWORD, { 
-    host: process.env.MYSQL_HOST, 
-    dialect: 'mysql', /* one of 'mysql' | 'mariadb' | 'postgres' | 'mssql' */ 
+  host: process.env.MYSQL_HOST, 
+  dialect: 'mariadb', /* one of 'mysql' | 'mariadb' | 'postgres' | 'mssql' */ 
+  models: [User, Session]
 });
-
-import { Model, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
-
-// order of InferAttributes & InferCreationAttributes is important.
-export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
-  // 'CreationOptional' is a special type that marks the field as optional
-  // when creating an instance of the model (such as using Model.create()).
-  declare id: CreationOptional<number>;
-  declare username: string;
-  declare password: string;
-}

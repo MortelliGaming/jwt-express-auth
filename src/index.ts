@@ -32,10 +32,14 @@ app.get('/secure-route', auth, (req, res) => {
 
 // check database connection
 sequelize.authenticate().then(() => {
-    console.log('Connection has been established successfully.');
-    app.listen(port, () => {
-        return console.log(`Express is listening at http://localhost:${port}`);
-    });
+    sequelize.sync().then(() => {
+        console.log('Connection has been established successfully.');
+        app.listen(port, () => {
+            return console.log(`Express is listening at http://localhost:${port}`);
+        });
+    }).catch((error: any) => {
+        console.error('unable to sync the database', error);
+    })
 }).catch((error: any) => {
     console.error('Unable to connect to the database:', error);
 })
