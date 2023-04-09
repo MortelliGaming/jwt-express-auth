@@ -1,32 +1,32 @@
 
 import type { Request, Response } from 'express';
 import { jwt } from 'jsonwebtoken'
-import { LoginToken, RefreshToken, User } from '../database';
-import { LoginDto, TokenContent, TokenType } from './types';
+import { LoginToken, RefreshToken, User } from '../../database';
+import * as types from './types';
 
 
 const SECRET_KEY = process.env.JWTKEY || '<ASECRETKEYTOENCRYPTJWT>'
 
-export async function extractUserFromHeaderIfInDB(req: Request): Promise<TokenContent|null> {
+export async function extractUserFromHeaderIfInDB(req: Request): Promise<types.TokenContent|null> {
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
         if (!token) {
             throw new Error();
         }
-        const decoded = jwt.verify(token, SECRET_KEY) as TokenContent;
+        const decoded = jwt.verify(token, SECRET_KEY) as types.TokenContent;
         if(!decoded) {
             throw new Error();
         }
         let dbToken = '';
         switch(decoded.type) {
-            case TokenType.Login: 
+            case types.TokenType.Login: 
                 dbToken = (await LoginToken.findOne({
                 where: {
                     token: token,
                 }
             }))?.token;
                 break;
-            case TokenType.Refresh:
+            case types.TokenType.Refresh:
                 dbToken = (await RefreshToken.findOne({
                     where: {
                         token: token,
@@ -35,7 +35,7 @@ export async function extractUserFromHeaderIfInDB(req: Request): Promise<TokenCo
                 break;
         }
         if(dbToken === token) {
-            return Promise.resolve(decoded as TokenContent)
+            return Promise.resolve(decoded as types.TokenContent)
         } else {
             return Promise.resolve(null)
         }
@@ -44,7 +44,7 @@ export async function extractUserFromHeaderIfInDB(req: Request): Promise<TokenCo
     }
 }
 
-async function createAuthTokens(userId: number) : Promise<LoginDto | null> {
+async function createAuthTokens(userId: number) : Promise<types.LoginDto | null> {
     try {
         const dbUser = await User.findOne({
             where: {
@@ -61,10 +61,10 @@ async function createAuthTokens(userId: number) : Promise<LoginDto | null> {
                 role: dbUser.role,
             }
         })
-        const loginToken = jwt.sign({ user: tokenUser, type: TokenType.Login }, SECRET_KEY, {
+        const loginToken = jwt.sign({ user: tokenUser, type: types.TokenType.Login }, SECRET_KEY, {
             expiresIn: '2 days',
         });
-        const refreshToken = jwt.sign({ user: tokenUser, type: TokenType.Refresh }, SECRET_KEY, {
+        const refreshToken = jwt.sign({ user: tokenUser, type: types.TokenType.Refresh }, SECRET_KEY, {
             expiresIn: '7 days',
         });
         return Promise.resolve({
@@ -79,7 +79,7 @@ async function createAuthTokens(userId: number) : Promise<LoginDto | null> {
 export async function refreshToken(req: Request, res: Response) {
     try {
         const decoded = await extractUserFromHeaderIfInDB(req);
-        if (!decoded || decoded.type !== TokenType.Refresh) {
+        if (!decoded || decoded.type !== types.TokenType.Refresh) {
             throw new Error();
         }
         const authTokens = await createAuthTokens(decoded.user.id)
@@ -165,4 +165,8 @@ export async function logout(req: Request, res: Response, logoutAll=false) {
     } catch(err: any) {
         res.status(401).send('Please authenticate')
     }
+}
+
+export {
+    types
 }

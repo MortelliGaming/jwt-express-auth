@@ -26,6 +26,8 @@ app.post('/login', login)
 app.post('/refreshToken', refreshToken)
 app.post('/logout', auth, logout)
 
+
+
 app.get('/secure-route', auth, (req, res) => {
     res.status(200).send({
         message: 'authorized'

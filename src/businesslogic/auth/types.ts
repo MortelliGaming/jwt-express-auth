@@ -1,4 +1,4 @@
-import { UserRole } from "../database";
+import { UserRole } from "../../database";
 
 export enum TokenType {
     Login = 'Login',
@@ -19,4 +19,8 @@ export interface TokenContent {
 export interface LoginDto {
     loginToken: string,
     refreshToken: string,
+}
+
+export {
+    UserRole
 }
